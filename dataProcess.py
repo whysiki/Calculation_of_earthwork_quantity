@@ -88,13 +88,14 @@ def c_h0(lists: list[list]):
     # 0 1 2 3 4   |
     # 0 1 2 3 4   |
     # 0 1 2 3 4   y
-    h1_point = set(list(product([0, 3], [0, 4])))
-    h4_point = set(list(product([1, 2], [1, 2, 3])))
+    h1_point = set(list(product([0, 3], [0, 4])))  # 计算一次的点，角点
+    h4_point = set(list(product([1, 2], [1, 2, 3])))  # 计算四次的点，两边交叉点
     h2_point = (
         set(list(product([i for i in range(4)], [i for i in range(5)])))  # all
         - h1_point
         - h4_point
-    )
+    )  # 计算两次的点，非边界边上的点
+    # h3_point = set(list(product([1, 2], [0, 4])))  # 计算三次的点，凹角点， 在四方的方格网上不会出现，具体情况具体分析
     # print(h1_point, h2_point, h4_point)
     for y, x_line in enumerate(lists):
         for x, data in enumerate(x_line):
