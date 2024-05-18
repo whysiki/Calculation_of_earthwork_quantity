@@ -394,6 +394,20 @@ class GridNet:
 
             total_area += poly.area * average_value
 
+            # test
+            # print(valuelist)
+            # fig, ax = plt.subplots()
+            # self.drawGridNetLines(self.verticalPoints, self.horizontalPoints, ax)
+            # x, y = poly.exterior.xy
+            # color = "red" if min(valuelist) < 0 else "blue"
+            # ax.fill(x, y, alpha=0.5, fc=color, ec="none")
+            # ax.invert_yaxis()
+            # # ax.set_aspect("equal", "box")
+            # ax.xaxis.set_ticks_position("top")
+
+            # ax.xaxis.set_label_position("top")
+            # plt.show()
+
         return total_area
 
     def calculateAmountExcavationAndFilling_for_all_girds(self):
