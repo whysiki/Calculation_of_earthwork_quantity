@@ -434,21 +434,15 @@ if __name__ == "__main__":
     gridNet.calculateAmountExcavationAndFilling_for_all_girds()
 
     def showData(gridNet: GridNet):
-
-        # 创建带有指定网格布局的图形
         fig = plt.figure(figsize=(10, 6))
         gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])  # 定义两列，第一列比第二列宽
-
-        # 在第一列创建轴用于绘图
         ax = fig.add_subplot(gs[0])
 
-        # 假设有网格对象和相关方法已经定义
         gridNet.drawGridNetLines(gridNet.verticalPoints, gridNet.horizontalPoints, ax)
         ax.invert_yaxis()
         ax.xaxis.set_ticks_position("top")
         ax.xaxis.set_label_position("top")
 
-        # 数据表格列表
         cell_text = []
 
         for rs in gridNet.grids:
@@ -483,19 +477,16 @@ if __name__ == "__main__":
                     va="center",
                     weight="bold",
                 )
-                # 收集数据到表格数据列表
                 cell_text.append([textindex, textexcavation, textfilling])
 
         cell_text.append(
             ["Total", f"-{gridNet.excavationAll}", f"+{gridNet.fillingAll}"]
         )
 
-        # 添加表头
         cell_text.insert(0, ["Index", "Excavation", "Filling"])
 
-        # 在第二列创建轴用于显示表格
         ax2 = fig.add_subplot(gs[1])
-        ax2.axis("off")  # 隐藏坐标轴
+        ax2.axis("off")
         table = ax2.table(
             cellText=cell_text,
             colLabels=cell_text.pop(0),
@@ -504,11 +495,8 @@ if __name__ == "__main__":
         )
         table.auto_set_font_size(False)
         table.set_fontsize(10)
-        table.scale(1, 2)  # 调整表格行高
-
+        table.scale(1, 2)
         ax.set_title("Grid Excavation and Filling Data Table")
-
-        # 调整整个图形布局
         plt.tight_layout()
 
     showNegativeAndPositivePath(gridNet)
@@ -553,13 +541,10 @@ if __name__ == "__main__":
 
     ax.add_artist(legend1)
 
-    legend2 = ax.legend(
-        loc="center left", bbox_to_anchor=(1, 0.5)
-    )  # 表示图例框的中心应位于图表框（axes bounding box）的右侧中心（1 指的是完全在右边界外，0.5 表示垂直居中）。
+    legend2 = ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
     fig.subplots_adjust(right=0.75)
     fig.gca().invert_yaxis()
-    # 将 x 轴放到上面
     ax.xaxis.set_ticks_position("top")
 
     ax.xaxis.set_label_position("top")
