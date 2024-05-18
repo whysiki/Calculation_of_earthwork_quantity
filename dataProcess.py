@@ -120,7 +120,7 @@ print(c_h0(linea))
 # 计算设计标高
 def c_she_ji_biao_gao(lists: list[list], h0: float):
     results = []
-    center_point = (0, 2)  # y x
+    center_point = (0, 2)  # y x # 如果是单向坡，那么这个点是角点坐标
     # 0 1 2 3 4   - > x
     # 0 1 2 3 4   |
     # 0 1 2 3 4   |
