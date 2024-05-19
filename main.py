@@ -9,7 +9,7 @@ from visualizeData import (
 
 if __name__ == "__main__":
 
-    # 每个都是方格网的一个点, 左上角是原点 从左到右为y,从上到下为x轴
+    # 每个都是方格网的一个点, 坐标系： 左上角是原点 从左到右为y,从上到下为x轴
     # 施工标高数据
     # np.array(设计标高) - np.array(原场地标高)
     # data = [
@@ -24,36 +24,23 @@ if __name__ == "__main__":
     # 保留两位小数
     data = [[round(value, 2) for value in row] for row in data]
 
-    negtive_poins, positive_points, vertexs = (
-        GridNet.findAllNegtive_and_Positive_and_Vertexs_Points(
-            gridNetValueMatrix=data, net_length=GridNet().edge_length
-        )
-    )
-
-    zero_points = GridNet.find_zero_points(
-        gridNetValueMatrix=data, net_length=GridNet().edge_length
-    )
-
-    # 列视角点分布，行视角点分布
-    verticalPoints, horizontalPoints = GridNet.getverticalPoints_and_horizontalPoints(
-        vertexs=vertexs
-    )
-
     # 构造网格网络
     gridNet = GridNet(
-        verticalPoints=verticalPoints,
-        horizontalPoints=horizontalPoints,
-        zeropoints=zero_points.copy(),
-        positivePoints=positive_points,
-        negativePoints=negtive_poins,
-        vertexs=vertexs,
+        gridNetValueMatrix=data,
     )
 
+    # 构造插入零点的网格网络
     gridNet.construct_grids_and_insert_zero_points()
-    
+
+    # 计算每个网格的负值和正值区域
+
     gridNet.caculate_for_each_grid_negtive_positive_zone()
-    
+
+    # 计算整个网格网络的负值和正值区域
+
     gridNet.caculate_gridNetNegativeZone_gridNetPositiveZone()
+
+    # 计算每个网格的挖方和填方量和整个网格网络的挖方和填方量
 
     gridNet.calculateAmountExcavationAndFilling_for_all_girds()
 
