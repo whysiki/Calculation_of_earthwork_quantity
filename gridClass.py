@@ -1,12 +1,10 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from rich import print
 from typing import Iterable, List, Union
 import math
 from shapely.geometry import Point, Polygon, MultiPolygon
-from shapely.ops import unary_union
-import matplotlib.gridspec as gridspec
 from dataProcess import lenth_net
+from scipy.spatial import ConvexHull
 
 
 def is_point_on_edge(point: tuple[float, float], polygon: Polygon):
@@ -388,11 +386,23 @@ class GridNet:
 
             average_value = sum(valuelist) / len(set_coords)  # 平均高程
 
+            points3d = [
+                (p[0], p[1], self.get_value_by_coordinate(p)) for p in set_coords
+            ]
+
             # print(valuelist)
 
             # print(set_coords)
 
-            total_area += poly.area * average_value
+            # try:
+            #     hull = ConvexHull(points3d)
+            #     v = hull.volume
+            # except:
+            #     v = poly.area * average_value
+
+            v = poly.area * average_value
+
+            total_area += v
 
             # test
             # print(valuelist)
@@ -456,6 +466,52 @@ class GridNet:
         self.excavationAll = round(excavationAll, 3)
 
         print(f"excavationAll: - {self.excavationAll}, fillingAll: + {self.fillingAll}")
+
+    def calculateNegtiveZonesAndPositiveZones_geoCenterpoint_and_v(
+        self,
+    ) -> tuple[
+        dict["GridPath", tuple[Point, float]], dict["GridPath", tuple[Point, float]]
+    ]:
+        """
+
+        gridNetNegativeZone_c_v = {} # key: GridPath, value: (geoCenterPoint, v)
+
+        gridNetPositiveZone_c_v = {} # key: GridPath, value: (geoCenterPoint, v)
+
+        return gridNetNegativeZone_c_v, gridNetPositiveZone_c_v
+
+        """
+        assert self.gridNetNegativeZone and self.gridNetPositiveZone, "empty zones"
+
+        gridNetNegativeZone_c_v = {}
+        gridNetPositiveZone_c_v = {}
+
+        allvNegative = 0
+        allvPositive = 0
+
+        for path in self.gridNetNegativeZone:
+            polygon = Polygon([(p.x, p.y) for p in path.edges])
+            geoCenterPoint = polygon.centroid
+            v = self.calculate_area(polygon)
+            allvNegative += v
+            gridNetNegativeZone_c_v[path] = (geoCenterPoint, v)
+
+        for path in self.gridNetPositiveZone:
+            polygon = Polygon([(p.x, p.y) for p in path.edges])
+            geoCenterPoint = polygon.centroid
+            v = self.calculate_area(polygon)
+            allvPositive += v
+            gridNetPositiveZone_c_v[path] = (geoCenterPoint, v)
+
+        assert len(self.gridNetNegativeZone) == len(
+            gridNetNegativeZone_c_v
+        ), "negative zones not calculated"
+
+        assert len(self.gridNetPositiveZone) == len(
+            gridNetPositiveZone_c_v
+        ), "positive zones not calculated"
+
+        return gridNetNegativeZone_c_v, gridNetPositiveZone_c_v
 
 
 class GridPoint:

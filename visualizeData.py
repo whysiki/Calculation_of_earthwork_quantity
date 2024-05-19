@@ -11,7 +11,7 @@ def showExcavationAndFillingZone(
 
     fig, ax = plt.subplots()
 
-    # fig.set_size_inches(8, 8)
+    fig.set_size_inches(10, 6)
 
     # 画网格线
     gridNet.drawGridNetLines(gridNet.verticalPoints, gridNet.horizontalPoints, ax)
@@ -81,17 +81,17 @@ def showExcavationAndFillingZone(
 
     # 填充挖方区域和填方区域
 
-    for path in gridNet.gridNetNegativeZone:
+    for index, path in enumerate(gridNet.gridNetNegativeZone):
 
         xs, ys = zip(*[(p.x, p.y) for p in path])
 
-        ax.fill(xs, ys, color="red", alpha=0.5, label="negative zone")
+        ax.fill(xs, ys, color="red", alpha=0.5, label=f"negative zone {index+1}")
 
-    for path in gridNet.gridNetPositiveZone:
+    for index, path in enumerate(gridNet.gridNetPositiveZone):
 
         xs, ys = zip(*[(p.x, p.y) for p in path])
 
-        ax.fill(xs, ys, color="blue", alpha=0.5, label="positive zone")
+        ax.fill(xs, ys, color="blue", alpha=0.5, label=f"positive zone {index+1}")
 
     legend_elements = [
         Line2D(
@@ -167,9 +167,33 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
         s=100,
     )
 
+    gridNetNegativeZone_c_v, gridNetPositiveZone_c_v = (
+        gridNet.calculateNegtiveZonesAndPositiveZones_geoCenterpoint_and_v()
+    )
+
     for path in gridNet.gridNetNegativeZone:
 
         # print(path)
+        geoCenterPoint = gridNetNegativeZone_c_v[path][0]
+        v = gridNetNegativeZone_c_v[path][1]
+
+        ax12[0].scatter(geoCenterPoint.x, geoCenterPoint.y, color="red", s=50)
+        # ax12[0].text(
+        #     geoCenterPoint.x,
+        #     geoCenterPoint.y + GridNet().edge_length / 3,
+        #     f"v={round(v,2)}",
+        #     color="red",
+        #     weight="bold",
+        #     size=8,
+        # )
+        ax12[0].text(
+            geoCenterPoint.x,
+            geoCenterPoint.y + GridNet().edge_length / 6,
+            f"({round(geoCenterPoint.x,2)} , {round(geoCenterPoint.y,2)})",
+            color="red",
+            weight="bold",
+            size=8,
+        )
 
         xs, ys = zip(*[(p.x, p.y) for p in path])
 
@@ -181,6 +205,26 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
     for path in gridNet.gridNetPositiveZone:
 
         # print(path)
+        geoCenterPoint = gridNetPositiveZone_c_v[path][0]
+        v = gridNetPositiveZone_c_v[path][1]
+
+        ax12[1].scatter(geoCenterPoint.x, geoCenterPoint.y, color="blue", s=50)
+        # ax12[1].text(
+        #     geoCenterPoint.x,
+        #     geoCenterPoint.y + GridNet().edge_length / 3,
+        #     f"v={round(v,2)}",
+        #     color="blue",
+        #     weight="bold",
+        #     size=8,
+        # )
+        ax12[1].text(
+            geoCenterPoint.x,
+            geoCenterPoint.y + GridNet().edge_length / 6,
+            f"({round(geoCenterPoint.x,2)} , {round(geoCenterPoint.y,2)})",
+            color="blue",
+            weight="bold",
+            size=8,
+        )
 
         xs, ys = zip(*[(p.x, p.y) for p in path])
 
