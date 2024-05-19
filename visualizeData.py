@@ -1,13 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from rich import print
-from typing import Iterable, List, Union
-import math
-from shapely.geometry import Point, Polygon, MultiPolygon
-from shapely.ops import unary_union
 import matplotlib.gridspec as gridspec
 from matplotlib.lines import Line2D
-from gridClass import *
+from gridClass import GridNet
 from adjustText import adjust_text
 
 
