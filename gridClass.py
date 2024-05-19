@@ -5,6 +5,7 @@ import math
 from shapely.geometry import Point, Polygon, MultiPolygon
 from dataProcess import lenth_net
 from scipy.spatial import ConvexHull
+from shapely.ops import unary_union
 
 
 def is_point_on_edge(point: tuple[float, float], polygon: Polygon):
@@ -41,6 +42,20 @@ def is_point_in_polygon_or_on_edge(
             return "On edge", edge
         else:
             return "Outside", None
+
+
+def sort_yeild(
+    coordinate: tuple[float, float], order_index: dict, counter: dict
+) -> int:
+
+    if coordinate in order_index:
+        indices = order_index[coordinate]
+        index = indices[counter[coordinate] % len(indices)]
+        counter[coordinate] += 1
+        return index
+    else:
+
+        return float("inf")
 
 
 class Grid:
@@ -143,6 +158,70 @@ class Grid:
 
         self.insertedPoints.append(point)
 
+    @staticmethod
+    def sort_closepath(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
+
+        min_x = min(points, key=lambda p: p[0])[0]
+        max_x = max(points, key=lambda p: p[0])[0]
+        min_y = min(points, key=lambda p: p[1])[1]
+        max_y = max(points, key=lambda p: p[1])[1]
+
+        # 四个角点
+        left_upper = (min_x, min_y)
+        right_upper = (max_x, min_y)
+        right_lower = (max_x, max_y)
+        left_lower = (min_x, max_y)
+
+        # 四条边
+        edge1 = []
+        edge2 = []
+        edge3 = []
+        edge4 = []
+
+        for point in points:
+            if (
+                point != left_upper
+                and point != right_upper
+                and point != right_lower
+                and point != left_lower
+            ):
+                if point[1] == min_y and min_x < point[0] < max_x:  # Top edge
+                    edge1.append(point)
+                elif point[0] == max_x and min_y < point[1] < max_y:  # Right edge
+                    edge2.append(point)
+                elif point[1] == max_y and min_x < point[0] < max_x:  # Bottom edge
+                    edge3.append(point)
+                elif point[0] == min_x and min_y < point[1] < max_y:  # Left edge
+                    edge4.append(point)
+
+        # 对边上的点进行排序
+
+        edge1.sort(key=lambda x: x[0])  # Sort by x-coordinate for top edge
+        edge2.sort(key=lambda x: x[1])  # Sort by y-coordinate for right edge
+        edge3.sort(
+            key=lambda x: x[0], reverse=True
+        )  # Sort by x-coordinate descending for bottom edge
+        edge4.sort(
+            key=lambda x: x[1], reverse=True
+        )  # Sort by y-coordinate descending for left edge
+
+        # 连接所有点形成闭合路径
+        reordered_points = (
+            [left_upper]
+            + edge1
+            + [right_upper]
+            + edge2
+            + [right_lower]
+            + edge3
+            + [left_lower]
+            + edge4
+            + [left_upper]
+        )
+
+        assert len(reordered_points) == len(points)
+
+        return reordered_points
+
 
 class GridNet:
 
@@ -190,7 +269,7 @@ class GridNet:
             assert all(
                 isinstance(p, GridPoint) and p.isZeroPoint()
                 for p in self.gridNetAllzero_points
-            )
+            ), "gridNetAllzero_points must be a list of GridPoint and isZeroPoint"
 
         self.gridNetallpoints = (
             [p for ps in self.verticalPoints for p in ps]
@@ -216,8 +295,6 @@ class GridNet:
 
         assert self.gridNetallpoints, "gridNetallpoints is empty"
 
-        # assert self.gridNetAllzero_points, "gridNetAllzero_points is empty"
-
         for p in self.gridNetallpoints:
 
             if p.coordinate == coordinate:
@@ -226,6 +303,8 @@ class GridNet:
         raise ValueError("coordinate not found")
 
     def get_point_by_coordinate(self, coordinate: tuple[float, float]) -> "GridPoint":
+
+        assert self.gridNetallpoints, "gridNetallpoints is empty"
 
         for p in self.gridNetallpoints:
 
@@ -513,6 +592,279 @@ class GridNet:
 
         return gridNetNegativeZone_c_v, gridNetPositiveZone_c_v
 
+    @staticmethod
+    def find_zero_points(
+        gridNetValueMatrix: list[list[float]], net_length: int
+    ) -> list["GridPoint"]:
+
+        net_length = net_length
+
+        zero_points_coordinates = []
+        rows, cols = len(gridNetValueMatrix), len(gridNetValueMatrix[0])
+
+        # 遍历每一行，寻找水平边的零点
+        for i in range(rows):
+            for j in range(cols - 1):
+                if (
+                    gridNetValueMatrix[i][j] > 0 and gridNetValueMatrix[i][j + 1] < 0
+                ) or (
+                    gridNetValueMatrix[i][j] < 0 and gridNetValueMatrix[i][j + 1] > 0
+                ):
+                    # zero_points.append((20 * j + 10, 20 * i))
+                    point = (
+                        net_length * i,
+                        net_length * j
+                        + net_length
+                        * (
+                            abs(gridNetValueMatrix[i][j])
+                            / (
+                                abs(gridNetValueMatrix[i][j])
+                                + abs(gridNetValueMatrix[i][j + 1])
+                            )
+                        ),
+                    )
+                    point = round(point[0], 2), round(point[1], 2)
+                    zero_points_coordinates.append(point)
+
+        # 遍历每一列，寻找垂直边的零点
+        for j in range(cols):
+            for i in range(rows - 1):
+                if (
+                    gridNetValueMatrix[i][j] > 0 and gridNetValueMatrix[i + 1][j] < 0
+                ) or (
+                    gridNetValueMatrix[i][j] < 0 and gridNetValueMatrix[i + 1][j] > 0
+                ):
+                    # zero_points.append((20 * j, 20 * i + 10))
+                    point = (
+                        net_length * i
+                        + net_length
+                        * (
+                            abs(gridNetValueMatrix[i][j])
+                            / (
+                                abs(gridNetValueMatrix[i][j])
+                                + abs(gridNetValueMatrix[i + 1][j])
+                            )
+                        ),
+                        net_length * j,
+                    )
+                    point = round(point[0], 2), round(point[1], 2)
+                    zero_points_coordinates.append(point)
+
+        zero_points: list[GridPoint] = []
+
+        for coordinate in zero_points_coordinates:
+
+            zero_points.append(GridPoint(tuple(coordinate), 0))
+
+        return zero_points
+
+    @staticmethod
+    def findAllNegtive_and_Positive_and_Vertexs_Points(
+        gridNetValueMatrix: list[list[float]], net_length: int
+    ) -> tuple[list["GridPoint"], list["GridPoint"], list["GridPoint"]]:
+
+        negtive_points: list[GridPoint] = []
+
+        positive_points: list[GridPoint] = []
+
+        for y in range(np.array(gridNetValueMatrix).shape[0]):
+
+            for x in range(np.array(gridNetValueMatrix).shape[1]):
+
+                coordinate = (y * net_length, x * net_length)
+
+                value = gridNetValueMatrix[y][x]
+
+                point = GridPoint(coordinate=coordinate, value=value)
+
+                if point.value >= 0:
+
+                    positive_points.append(point)
+
+                else:
+
+                    negtive_points.append(point)
+
+        vertexs = negtive_points + positive_points
+
+        return negtive_points, positive_points, vertexs
+
+    def construct_grids_and_insert_zero_points(self):
+
+        for rs in self.grids:
+
+            for grid in rs:  # edge
+
+                edges = grid.path  # 闭合边
+
+                for zero in self.gridNetAllzero_points:
+
+                    _, insertededge = is_point_in_polygon_or_on_edge(
+                        zero.x, zero.y, [(p.x, p.y) for p in edges]
+                    )
+
+                    if insertededge:
+
+                        grid.insertPointInEdgePath(point=zero, index=len(grid.path))
+
+                edges_coordinates = [(p.x, p.y) for p in grid.path]
+
+                sorted_coordinates = Grid.sort_closepath(edges_coordinates)
+
+                order_index = {}
+                for index, value in enumerate(sorted_coordinates):
+                    if value not in order_index:
+                        order_index[value] = []
+                    order_index[value].append(index)
+                counter = {key: 0 for key in order_index}
+
+                grid.path = GridPath(
+                    edge=sorted(
+                        grid.path.edges,
+                        key=lambda x: sort_yeild(
+                            x.coordinate,
+                            order_index=order_index,
+                            counter=counter,
+                        ),
+                    )
+                )
+
+                assert grid.path.isClosed(), "path is not closed"
+
+    def caculate_for_each_grid_negtive_positive_zone(self):
+
+        for rs in self.grids:
+
+            for grid in rs:  # edge
+
+                split_zones: list[GridPath] = []
+
+                count_zeropoints_time = 0
+
+                last_end_index = 0
+
+                maxzeroindex = max(
+                    [
+                        grid.path.get_index_by_point(p)
+                        for p in grid.path
+                        if p.isZeroPoint()
+                    ]
+                )
+
+                maxindex = maxzeroindex if maxzeroindex > 0 else len(grid.path)
+
+                minzeroindex = min(
+                    [
+                        grid.path.get_index_by_point(p)
+                        for p in grid.path
+                        if p.isZeroPoint()
+                    ]
+                )
+
+                minindex = minzeroindex if minzeroindex > 0 else 0
+
+                index = minindex
+
+                begin = True
+
+                while (
+                    grid.path[index % len(grid.path)] != grid.path[minindex + 1]
+                    or begin
+                ):
+                    if len(split_zones) == 0:
+                        split_zones.append(GridPath([]))
+                    if grid.path[index % len(grid.path)].isZeroPoint():
+                        count_zeropoints_time += 1
+                    if count_zeropoints_time == 1:
+                        if (
+                            split_zones[-1].get_index_by_point(
+                                grid.path[index % len(grid.path)]
+                            )
+                            == -1
+                        ):
+                            split_zones[-1].insertPointEnd(
+                                grid.path[index % len(grid.path)]
+                            )
+                        index += 1
+                        continue
+                    if count_zeropoints_time == 2:
+                        if (
+                            split_zones[-1].get_index_by_point(
+                                grid.path[index % len(grid.path)]
+                            )
+                            == -1
+                        ):
+                            split_zones[-1].insertPointEnd(
+                                grid.path[index % len(grid.path)]
+                            )
+                        split_zones.append(GridPath([]))
+                        begin = False
+                        count_zeropoints_time = 0
+
+                split_zones = [path for path in split_zones if len(path) > 2]
+
+                split_zones_closed = [
+                    GridPath(path.edges + [path.edges[0]]) for path in split_zones
+                ]
+
+                assert all(
+                    path.isClosed() for path in split_zones_closed
+                ), "split_zones_closed is not closed"
+
+                split_zones_closed = [
+                    path for path in split_zones_closed if path.isAllSameSign()
+                ]
+
+                grid.negtiveZones = [
+                    path for path in split_zones_closed if path.isAllNegative()
+                ]
+
+                grid.positiveZones = [
+                    path for path in split_zones_closed if path.isAllPositive()
+                ]
+
+    def caculate_gridNetNegativeZone_gridNetPositiveZone(self):
+
+        def get_merged_polygon_Zones(polygons: list[Polygon]):
+
+            merged_polygon = unary_union(polygons)
+
+            merged_vertices = []
+            if isinstance(merged_polygon, Polygon):
+                merged_vertices = list(merged_polygon.exterior.coords)
+            elif isinstance(merged_polygon, MultiPolygon):
+                for poly in merged_polygon.geoms:
+                    merged_vertices.append(list(poly.exterior.coords))
+
+            return [
+                GridPath(
+                    edge=[self.get_point_by_coordinate(vertex) for vertex in vertexs]
+                )
+                for vertexs in merged_vertices
+            ]
+
+        assert self.grids, "grids is empty"
+
+        negtive_polygons: list[Polygon] = [
+            Polygon([(p.x, p.y) for p in path.edges])
+            for rs in self.grids
+            for grid in rs
+            for path in grid.negtiveZones
+        ]
+
+        positive_polygons: list[Polygon] = [
+            Polygon([(p.x, p.y) for p in path.edges])
+            for rs in self.grids
+            for grid in rs
+            for path in grid.positiveZones
+        ]
+
+        assert negtive_polygons and positive_polygons, "empty polygons"
+
+        self.gridNetNegativeZone = get_merged_polygon_Zones(negtive_polygons)
+
+        self.gridNetPositiveZone = get_merged_polygon_Zones(positive_polygons)
+
 
 class GridPoint:
 
@@ -692,59 +1044,3 @@ class GridPath:
     def __iter__(self):
 
         return iter(self.edges)
-
-
-def find_zero_points(
-    gridNetValueMatrix, net_length: int = GridNet().edge_length
-) -> List[tuple[float, float]]:
-
-    net_length = net_length
-
-    zero_points = []
-    rows, cols = len(gridNetValueMatrix), len(gridNetValueMatrix[0])
-
-    # 遍历每一行，寻找水平边的零点
-    for i in range(rows):
-        for j in range(cols - 1):
-            if (gridNetValueMatrix[i][j] > 0 and gridNetValueMatrix[i][j + 1] < 0) or (
-                gridNetValueMatrix[i][j] < 0 and gridNetValueMatrix[i][j + 1] > 0
-            ):
-                # zero_points.append((20 * j + 10, 20 * i))
-                point = (
-                    net_length * i,
-                    net_length * j
-                    + net_length
-                    * (
-                        abs(gridNetValueMatrix[i][j])
-                        / (
-                            abs(gridNetValueMatrix[i][j])
-                            + abs(gridNetValueMatrix[i][j + 1])
-                        )
-                    ),
-                )
-                point = round(point[0], 2), round(point[1], 2)
-                zero_points.append(point)
-
-    # 遍历每一列，寻找垂直边的零点
-    for j in range(cols):
-        for i in range(rows - 1):
-            if (gridNetValueMatrix[i][j] > 0 and gridNetValueMatrix[i + 1][j] < 0) or (
-                gridNetValueMatrix[i][j] < 0 and gridNetValueMatrix[i + 1][j] > 0
-            ):
-                # zero_points.append((20 * j, 20 * i + 10))
-                point = (
-                    net_length * i
-                    + net_length
-                    * (
-                        abs(gridNetValueMatrix[i][j])
-                        / (
-                            abs(gridNetValueMatrix[i][j])
-                            + abs(gridNetValueMatrix[i + 1][j])
-                        )
-                    ),
-                    net_length * j,
-                )
-                point = round(point[0], 2), round(point[1], 2)
-                zero_points.append(point)
-
-    return zero_points
