@@ -1,3 +1,4 @@
+adjustText==1.1.1
 contourpy==1.2.1
 cycler==0.12.1
 fonttools==4.51.0
@@ -12,5 +13,6 @@ Pygments==2.18.0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 rich==13.7.1
+scipy==1.13.0
 shapely==2.0.4
 six==1.16.0
