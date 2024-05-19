@@ -3,6 +3,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.lines import Line2D
 from gridClass import GridNet
 from adjustText import adjust_text
+from rich import print
 
 
 def showExcavationAndFillingZone(
@@ -334,6 +335,8 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
     cell_text.append(["Total", f"-{gridNet.excavationAll}", f"+{gridNet.fillingAll}"])
 
     cell_text.insert(0, ["Index", "Excavation", "Filling"])
+
+    print(cell_text)
 
     ax2 = fig.add_subplot(gs[1])
     ax2.axis("off")
