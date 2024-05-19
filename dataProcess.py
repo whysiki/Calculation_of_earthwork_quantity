@@ -16,9 +16,17 @@ lenth_net = 20  # m
 # 网格形状
 net_shape = (4, 5)
 
+# 拟平整场地后的最高点坐标 ， 根据坡度下降方向和坡面的形状确定
+center_point = (0, 2)  # y x
 
 # # 计算原场地标高
 # def c_biao_gao(lists: list[list]):
+#     equidistant = 0.5 # 等高距
+#     ha  #临近等高线的标高
+#     x  #角点到临近等高线的水平距离 正代表角点比临近等高线高，负代表角点比临近等高线低
+#     l 过角点的的相邻两等高线的最短直接距离
+#     (x * equidistant) / l  = dh
+#     hx = ha + dh 或者 ha - dh
 #     results = []
 #     for ha, x, l in lists:
 #         results.append([ha + (x * equidistant) / l])
@@ -65,18 +73,30 @@ net_shape = (4, 5)
 # print("原场地标高")
 # linea[0][3] = 28.49
 
-# # 原场地标高
+# 坐标系
+# ---->x
+# |
+# |
+# |
+# y
+#
+# # 原场地标高 测试数据
 linea = [
     [28.6, 28.74, 29.43, 28.49, 28.87],
     [27.2, 28.25, 28.34, 28.02, 27.71],
     [27.37, 27.64, 28.5, 27.71, 27.47],
     [26.91, 27.15, 27.69, 27.17, 27.19],
 ]
-
+#
+#
+#
+#
 assert np.array(linea).shape == net_shape, "原场地标高数据格式错误"
+
 assert number_net == (net_shape[0] - 1) * (net_shape[1] - 1), "原场地标高数据格式错误"
 
 print("原场地标高")
+
 print(np.array(linea))
 
 
@@ -114,14 +134,16 @@ def c_h0(lists: list[list]):
 
 # 平整标高
 print("原场地平整标高")
-print(c_h0(linea))
+原场地平整标高 = c_h0(linea)
+print(原场地平整标高)
 #
 
 
 # 计算设计标高
 def c_she_ji_biao_gao(lists: list[list], h0: float):
     results = []
-    center_point = (0, 2)  # y x # 如果是单向坡，那么这个点是角点坐标
+    global center_point
+    center_point = center_point
     # 0 1 2 3 4   - > x
     # 0 1 2 3 4   |
     # 0 1 2 3 4   |
@@ -132,8 +154,8 @@ def c_she_ji_biao_gao(lists: list[list], h0: float):
 
             data = round(
                 h0
-                - abs(x - center_point[-1]) * cross_slope * lenth_net
-                - abs(y - center_point[0]) * slope * lenth_net,
+                - abs(x - center_point[-1]) * cross_slope * lenth_net  # 横坡下降的标高
+                - abs(y - center_point[0]) * slope * lenth_net,  # 纵坡下降的标高
                 3,
             )
             # print(y, x, data)
@@ -164,8 +186,13 @@ print(c_x(linea))
 # print("设计标高")
 # print(np.array(c_she_ji_biao_gao(linea, c_x(linea))))
 print("设计标高平整标高")
-print(c_h0(c_she_ji_biao_gao(linea, c_x(linea))))
+设计标高平整标高 = c_h0(c_she_ji_biao_gao(linea, c_x(linea)))
 
+print(设计标高平整标高)
+
+# 原场地平整标高应该等于设计标高平整标高
+
+# assert 设计标高平整标高 == 原场地平整标高, "设计标高平整标高应该等于原场地平整标高"
 
 设计标高 = np.array(c_she_ji_biao_gao(linea, c_x(linea)))
 原场地标高 = np.array(linea)
@@ -173,7 +200,7 @@ print("设计标高")
 print(设计标高)
 print("原场地标高")
 print(原场地标高)
-print("设计标高减去原场地标高")
+print("施工标高 = 设计标高减去原场地标高")
 施工标高 = np.array(设计标高) - np.array(原场地标高)
 print(施工标高)
 
