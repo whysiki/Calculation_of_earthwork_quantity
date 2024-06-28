@@ -2,12 +2,6 @@ import numpy as np
 from rich import print
 from itertools import product
 
-
-# def print(*argsm, **kwargs):
-#    pass
-#    return print(*argsm, **kwargs
-
-
 # 等高距
 # equidistant = 0.5  # m
 # 纵坡
@@ -31,6 +25,7 @@ center_point = (0, 0)  # y x
 # 示例平整场地任务是，拟将场地平整为三坡向两坡面的，纵坡为2%，横坡为2%，网格边长为20m
 # print("原场地标高")
 # linea[0][3] = 28.49
+
 
 data = """
 230.63	230.16	230.55	230.86	230.78	230.65	230.98	230.61	230.15	230.17	230.08	229.35	229.38	229.16	228.76	228.18	227.55	227.65
