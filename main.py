@@ -6,6 +6,7 @@ from visualizeData import (
     showData,
     showExcavationAndFillingZone,
 )
+from rich import print
 
 if __name__ == "__main__":
 
@@ -21,8 +22,12 @@ if __name__ == "__main__":
 
     data = 施工标高.tolist()
 
+    # print(data)
+
     # 保留两位小数
     data = [[round(value, 2) for value in row] for row in data]
+
+    print(data)
 
     # 构造网格网络
     gridNet = GridNet(

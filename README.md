@@ -16,3 +16,5 @@
 运行`main.py`即可得到土方工程量的计算结果和三个图
 
 调整`dataProcess.py`中的网格和标高数据
+
+![alt text](images/README/image.png)

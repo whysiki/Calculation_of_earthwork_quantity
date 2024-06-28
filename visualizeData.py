@@ -4,6 +4,25 @@ from matplotlib.lines import Line2D
 from gridClass import GridNet
 from adjustText import adjust_text
 from rich import print
+import pandas as pd
+
+# 图表大小
+
+chart_size = (20, 12)
+
+
+# 全局设置字体大小
+plt.rcParams.update(
+    {
+        "font.size": 8,  # 全局字体大小
+        "axes.titlesize": 12,  # 图表标题字体大小
+        "axes.labelsize": 8,  # 坐标轴标签字体大小
+        "xtick.labelsize": 8,  # x 轴刻度字体大小
+        "ytick.labelsize": 8,  # y 轴刻度字体大小
+        "legend.fontsize": 8,  # 图例字体大小
+        "figure.titlesize": 12,  # 图表整体标题字体大小
+    }
+)
 
 
 def showExcavationAndFillingZone(
@@ -12,7 +31,8 @@ def showExcavationAndFillingZone(
 
     fig, ax = plt.subplots()
 
-    fig.set_size_inches(10, 6)
+    # 大小全屏
+    fig.set_size_inches(*chart_size)
 
     # 画网格线
     gridNet.drawGridNetLines(gridNet.verticalPoints, gridNet.horizontalPoints, ax)
@@ -35,21 +55,21 @@ def showExcavationAndFillingZone(
         [p.x for p in gridNet.gridNetAllzero_points],
         [p.y for p in gridNet.gridNetAllzero_points],
         color="green",
-        s=100,
+        s=20,
     )
     # 画正负点分布
     ax.scatter(
         [p.x for p in gridNet.GridNetNegativePoints],
         [p.y for p in gridNet.GridNetNegativePoints],
         color="red",
-        s=50,
+        s=10,
     )
 
     ax.scatter(
         [p.x for p in gridNet.GridNetPositivePoints],
         [p.y for p in gridNet.GridNetPositivePoints],
         color="blue",
-        s=50,
+        s=10,
     )
 
     # 标注每个零点的坐标
@@ -57,8 +77,8 @@ def showExcavationAndFillingZone(
     for p in gridNet.gridNetAllzero_points:
         texts.append(
             ax.text(
-                p.x,
-                p.y,
+                p.x + grid.edge_length / 10,
+                p.y + grid.edge_length / 10,
                 f"({p.x}, {p.y})",
                 size=8,
                 # color="green",
@@ -69,8 +89,8 @@ def showExcavationAndFillingZone(
     for p in gridNet.GridNetVertexs:
         texts.append(
             ax.text(
-                p.x,
-                p.y,
+                p.x + grid.edge_length / 10,
+                p.y + grid.edge_length / 10,
                 f"{p.value}",
                 color="red" if p.value < 0 else "blue",
                 weight="bold",
@@ -136,6 +156,9 @@ def showExcavationAndFillingZone(
 
     fig.subplots_adjust(right=0.75)
     fig.gca().invert_yaxis()
+
+    # fig.tight_layout()
+
     ax.xaxis.set_ticks_position("top")
 
     ax.xaxis.set_label_position("top")
@@ -149,7 +172,7 @@ def showExcavationAndFillingZone(
 
 def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int = 300):
 
-    fig12, ax12 = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+    fig12, ax12 = plt.subplots(nrows=1, ncols=2, figsize=chart_size)
 
     gridNet.drawGridNetLines(gridNet.verticalPoints, gridNet.horizontalPoints, ax12[0])
     gridNet.drawGridNetLines(gridNet.verticalPoints, gridNet.horizontalPoints, ax12[1])
@@ -179,14 +202,6 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
         v = gridNetNegativeZone_c_v[path][1]
 
         ax12[0].scatter(geoCenterPoint.x, geoCenterPoint.y, color="red", s=50)
-        # ax12[0].text(
-        #     geoCenterPoint.x,
-        #     geoCenterPoint.y + GridNet().edge_length / 3,
-        #     f"v={round(v,2)}",
-        #     color="red",
-        #     weight="bold",
-        #     size=8,
-        # )
         ax12[0].text(
             geoCenterPoint.x,
             geoCenterPoint.y + GridNet().edge_length / 6,
@@ -210,14 +225,6 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
         v = gridNetPositiveZone_c_v[path][1]
 
         ax12[1].scatter(geoCenterPoint.x, geoCenterPoint.y, color="blue", s=50)
-        # ax12[1].text(
-        #     geoCenterPoint.x,
-        #     geoCenterPoint.y + GridNet().edge_length / 3,
-        #     f"v={round(v,2)}",
-        #     color="blue",
-        #     weight="bold",
-        #     size=8,
-        # )
         ax12[1].text(
             geoCenterPoint.x,
             geoCenterPoint.y + GridNet().edge_length / 6,
@@ -287,9 +294,17 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
 
 def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
 
-    fig = plt.figure(figsize=(10, 6))
-    gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])  # 定义两列，第一列比第二列宽
-    ax = fig.add_subplot(gs[0])
+    # fig = plt.figure(figsize=chart_size)
+    # gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])  # 定义两列，第一列比第二列宽
+    # ax = fig.add_subplot(gs[0])
+    fig, ax = plt.subplots()
+
+    # 图大小全屏
+    #
+    # fig.set_size_inches(10, 6)
+
+    # 大小全屏
+    fig.set_size_inches(*chart_size)
 
     gridNet.drawGridNetLines(gridNet.verticalPoints, gridNet.horizontalPoints, ax)
     ax.invert_yaxis()
@@ -314,7 +329,7 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
             )
             ax.text(
                 grid.center_coordinate[0],
-                grid.center_coordinate[1] + GridNet().edge_length / 6,
+                grid.center_coordinate[1] + GridNet().edge_length / 7,
                 textexcavation,
                 color="red",
                 ha="center",
@@ -323,7 +338,7 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
             )
             ax.text(
                 grid.center_coordinate[0],
-                grid.center_coordinate[1] + GridNet().edge_length / 4,
+                grid.center_coordinate[1] + GridNet().edge_length / 3,
                 textfilling,
                 color="blue",
                 ha="center",
@@ -338,17 +353,21 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
 
     print(cell_text)
 
-    ax2 = fig.add_subplot(gs[1])
-    ax2.axis("off")
-    table = ax2.table(
-        cellText=cell_text,
-        colLabels=cell_text.pop(0),
-        cellLoc="center",
-        loc="center",
-    )
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    table.scale(1, 2)
+    # 导出为表格
+
+    pd.DataFrame(cell_text).to_excel("DataTable.xlsx", index=False)
+
+    # ax2 = fig.add_subplot(gs[1])
+    # ax2.axis("off")
+    # table = ax2.table(
+    #     cellText=cell_text,
+    #     colLabels=cell_text.pop(0),
+    #     cellLoc="center",
+    #     loc="center",
+    # )
+    # table.auto_set_font_size(False)
+    # table.set_fontsize(6)
+    # table.scale(1, 2)
     ax.set_title("Grid Excavation and Filling Data Table")
     fig.tight_layout()
 

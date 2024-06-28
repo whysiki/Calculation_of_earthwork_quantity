@@ -4,6 +4,7 @@ from typing import Iterable, List, Union
 import math
 from shapely.geometry import Point, Polygon, MultiPolygon
 from dataProcess import lenth_net
+from tqdm import tqdm
 
 # from scipy.spatial import ConvexHull
 from shapely.ops import unary_union
@@ -851,9 +852,17 @@ class GridNet:
 
     def caculate_for_each_grid_negtive_positive_zone(self):
 
-        for rs in self.grids:
+        # for rs in self.grids:
 
-            for grid in rs:  # edge
+        #     for grid in tqdm(rs):
+
+        #         print(grid)
+
+        for rs in tqdm(self.grids, desc="caculate_for_each_grid_negtive_positive_zone"):
+
+            # print(rs)
+
+            for grid in tqdm(rs):  # edge
 
                 split_zones: list[GridPath] = []
 
@@ -871,75 +880,110 @@ class GridNet:
 
                 # maxindex = maxzeroindex if maxzeroindex > 0 else len(grid.path)
 
-                minzeroindex = min(
-                    [
-                        grid.path.get_index_by_point(p)
-                        for p in grid.path
-                        if p.isZeroPoint()
+                # try:
+
+                # print(grid)
+                # GridPoint(coordinate=(0, 0), value=2.37)     GridPoint(coordinate=(20, 0), value=2.72)
+                # GridPoint(coordinate=(0, 20), value=2.79)     GridPoint(coordinate=(20, 20), value=2.79)
+
+                zerofind = [
+                    grid.path.get_index_by_point(p)
+                    for p in grid.path
+                    if p.isZeroPoint()
+                ]
+
+                if len(zerofind) > 0:
+
+                    minzeroindex = min(zerofind)
+                    # except:
+
+                    # minzeroindex = 0
+
+                    minindex = minzeroindex if minzeroindex > 0 else 0
+
+                    index = minindex
+
+                    begin = True
+
+                    while (
+                        grid.path[index % len(grid.path)] != grid.path[minindex + 1]
+                        or begin
+                    ):
+                        if len(split_zones) == 0:
+                            split_zones.append(GridPath([]))
+                        if grid.path[index % len(grid.path)].isZeroPoint():
+                            count_zeropoints_time += 1
+                        if count_zeropoints_time == 1:
+                            if (
+                                split_zones[-1].get_index_by_point(
+                                    grid.path[index % len(grid.path)]
+                                )
+                                == -1
+                            ):
+                                split_zones[-1].insertPointEnd(
+                                    grid.path[index % len(grid.path)]
+                                )
+                            index += 1
+                            continue
+                        if count_zeropoints_time == 2:
+                            if (
+                                split_zones[-1].get_index_by_point(
+                                    grid.path[index % len(grid.path)]
+                                )
+                                == -1
+                            ):
+                                split_zones[-1].insertPointEnd(
+                                    grid.path[index % len(grid.path)]
+                                )
+                            split_zones.append(GridPath([]))
+                            begin = False
+                            count_zeropoints_time = 0
+
+                    split_zones = [path for path in split_zones if len(path) > 2]
+
+                    split_zones_closed = [
+                        GridPath(path.edges + [path.edges[0]]) for path in split_zones
                     ]
-                )
 
-                minindex = minzeroindex if minzeroindex > 0 else 0
+                    assert all(
+                        path.isClosed() for path in split_zones_closed
+                    ), "split_zones_closed is not closed"
 
-                index = minindex
+                    split_zones_closed = [
+                        path for path in split_zones_closed if path.isAllSameSign()
+                    ]
 
-                begin = True
+                    grid.negtiveZones = [
+                        path for path in split_zones_closed if path.isAllNegative()
+                    ]
 
-                while (
-                    grid.path[index % len(grid.path)] != grid.path[minindex + 1]
-                    or begin
-                ):
-                    if len(split_zones) == 0:
-                        split_zones.append(GridPath([]))
-                    if grid.path[index % len(grid.path)].isZeroPoint():
-                        count_zeropoints_time += 1
-                    if count_zeropoints_time == 1:
-                        if (
-                            split_zones[-1].get_index_by_point(
-                                grid.path[index % len(grid.path)]
-                            )
-                            == -1
-                        ):
-                            split_zones[-1].insertPointEnd(
-                                grid.path[index % len(grid.path)]
-                            )
-                        index += 1
-                        continue
-                    if count_zeropoints_time == 2:
-                        if (
-                            split_zones[-1].get_index_by_point(
-                                grid.path[index % len(grid.path)]
-                            )
-                            == -1
-                        ):
-                            split_zones[-1].insertPointEnd(
-                                grid.path[index % len(grid.path)]
-                            )
-                        split_zones.append(GridPath([]))
-                        begin = False
-                        count_zeropoints_time = 0
+                    grid.positiveZones = [
+                        path for path in split_zones_closed if path.isAllPositive()
+                    ]
 
-                split_zones = [path for path in split_zones if len(path) > 2]
+                else:
 
-                split_zones_closed = [
-                    GridPath(path.edges + [path.edges[0]]) for path in split_zones
-                ]
+                    # here is the case that there is no zero point in the grid
 
-                assert all(
-                    path.isClosed() for path in split_zones_closed
-                ), "split_zones_closed is not closed"
+                    grid_path = GridPath(grid.path.edges)
 
-                split_zones_closed = [
-                    path for path in split_zones_closed if path.isAllSameSign()
-                ]
+                    assert grid_path.isClosed(), "grid_path is not closed"
 
-                grid.negtiveZones = [
-                    path for path in split_zones_closed if path.isAllNegative()
-                ]
+                    split_zones_closed = [grid_path]
 
-                grid.positiveZones = [
-                    path for path in split_zones_closed if path.isAllPositive()
-                ]
+                    # split_zones_closed = [
+                    #     path for path in split_zones_closed if path.isAllSameSign()
+                    # ]
+
+                    grid.negtiveZones = [
+                        path for path in split_zones_closed if path.isAllNegative()
+                    ]
+
+                    grid.positiveZones = [
+                        path for path in split_zones_closed if path.isAllPositive()
+                    ]
+
+                    assert grid.negtiveZones or grid.positiveZones, "empty zones"
 
     def caculate_gridNetNegativeZone_gridNetPositiveZone(self):
 
@@ -954,12 +998,34 @@ class GridNet:
                 for poly in merged_polygon.geoms:
                     merged_vertices.append(list(poly.exterior.coords))
 
-            return [
-                GridPath(
-                    edge=[self.get_point_by_coordinate(vertex) for vertex in vertexs]
-                )
-                for vertexs in merged_vertices
-            ]
+            print(merged_vertices, np.array(merged_vertices).shape)
+
+            demension = len(np.array(merged_vertices).shape)
+
+            if demension == 3:
+
+                return [
+                    GridPath(
+                        edge=[
+                            self.get_point_by_coordinate(vertex) for vertex in vertexs
+                        ]
+                    )
+                    for vertexs in merged_vertices
+                ]
+
+            elif demension == 2:
+
+                return [
+                    GridPath(
+                        edge=[
+                            self.get_point_by_coordinate(vertex)
+                            for vertex in merged_vertices
+                        ]
+                    )
+                ]
+            else:
+
+                raise ValueError("merged_vertices demension error !")
 
         assert self.grids, "grids is empty"
 
