@@ -55,21 +55,21 @@ def showExcavationAndFillingZone(
         [p.x for p in gridNet.gridNetAllzero_points],
         [p.y for p in gridNet.gridNetAllzero_points],
         color="green",
-        s=20,
+        s=40,
     )
     # 画正负点分布
     ax.scatter(
         [p.x for p in gridNet.GridNetNegativePoints],
         [p.y for p in gridNet.GridNetNegativePoints],
         color="red",
-        s=10,
+        s=20,
     )
 
     ax.scatter(
         [p.x for p in gridNet.GridNetPositivePoints],
         [p.y for p in gridNet.GridNetPositivePoints],
         color="blue",
-        s=10,
+        s=20,
     )
 
     # 标注每个零点的坐标

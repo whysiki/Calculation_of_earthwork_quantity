@@ -4,29 +4,31 @@ from itertools import product
 
 # 等高距
 # equidistant = 0.5  # m
-# 纵坡
+# 纵坡 从上往下下降坡度
 slope = 0.03  # m/m ly 0.3%
-# 横坡
+# 横坡 从左往右下降坡度
 cross_slope = 0.0025  # m/m lx 0.25%
 # 网格数
-number_net = 13 * 17  # 个
+number_net = 13 * 17  # （列角点数目 -1 ，行角点数目 -1 ） 个
 # 网格边长
 lenth_net = 20  # m
 # 网格形状
-net_shape = (14, 18)  # y x
+net_shape = (14, 18)  # y x （列角点数目，行角点数目）
 
 # 拟平整场地后的最高点坐标 ， 根据坡度下降方向和坡面的形状确定
 center_point = (0, 0)  # y x
 
 
-# 原场地标高
-# 原场地标高
-# 每个这是一个二维矩阵，值代表标高，行代表y坐标，列代表x坐标 ， 网格形状为4*5的场地,  一共12个网格
-# 示例平整场地任务是，拟将场地平整为三坡向两坡面的，纵坡为2%，横坡为2%，网格边长为20m
-# print("原场地标高")
-# linea[0][3] = 28.49
+# 坐标系 
+# ---->x 从左往右为 x
+# |
+# |
+# |
+# y
+# 从上往下为 y
 
 
+#每个是方格网的一个角点原场地标高
 data = """
 230.63	230.16	230.55	230.86	230.78	230.65	230.98	230.61	230.15	230.17	230.08	229.35	229.38	229.16	228.76	228.18	227.55	227.65
 229.68	229.56	229.58	230.74	230.75	230.73	230.71	230.73	230.56	230.34	230.25	229.56	229.33	229.56	228.78	228.56	228.23	227.83
@@ -44,68 +46,28 @@ data = """
 226.4	226.16	226.17	226.36	226.38	227.42	227.44	227.62	227.34	227.58	227.46	226.74	226.75	227.42	227.41	227.45	226.52	226.54
 """.strip()
 
-# 坐标系
-# ---->x
-# |
-# |
-# |
-# y
-#
-# # 原场地标高 测试数据
-# linea = [
-#     [28.6, 28.74, 29.43, 28.49, 28.87],
-#     [27.2, 28.25, 28.34, 28.02, 27.71],
-#     [27.37, 27.64, 28.5, 27.71, 27.47],
-#     [26.91, 27.15, 27.69, 27.17, 27.19],
-# ]
-#
-#
-#
-#
-
 linea = [[float(ii) for ii in i.split("\t") if ii] for i in data.split("\n")]
-
-print(linea)
-
-print(np.array(linea).shape)
-
 
 assert np.array(linea).shape == net_shape, "原场地标高数据格式错误"
 
 assert number_net == (net_shape[0] - 1) * (net_shape[1] - 1), "原场地标高数据格式错误"
 
-print("原场地标高")
-
-
-print(np.array(linea).shape)  # (14, 18)
-
-
-# [[28.6, 28.74, 29.43, 28.5, 28.87], [27.2, 28.25, 28.34, 28.02, 27.71], [27.37, 27.64, 28.5, 27.71, 27.47], [26.91, 27.15, 27.69, 27.17, 27.19]]
 # 计算平整标高
 def c_h0(lists: list[list]):
 
-    # return 228.67
     h1, h2, h3, h4 = 0, 0, 0, 0
-    # # 0 1 2 3 4   - > x
-    # # 0 1 2 3 4   |
-    # # 0 1 2 3 4   |
-    # # 0 1 2 3 4   y
+    maxindexy=net_shape[0]-1
+    maxindexx=net_shape[1]-1
     # h1_point = set(list(product([0, 3], [0, 4])))  # 计算一次的点，角点  #(14, 18)
-    h1_point = set(list(product([0, 13], [0, 17])))  # 计算一次的点，角点  #(14, 18)
+    h1_point = set(list(product([0, maxindexy], [0, maxindexx])))  # 计算一次的点，角点  #(14, 18)
     # h4_point = set(list(product([1, 2], [1, 2, 3])))  # 计算四次的点，两边交叉点
-    h4_point = set(list(product([i for i in range(1, 13)], [i for i in range(1, 17)])))
-    # h2_point = (
-    #     set(list(product([i for i in range(4)], [i for i in range(5)])))  # all
-    #     - h1_point
-    #     - h4_point
-    # )  # 计算两次的点，非边界边上的点
+    h4_point = set(list(product([i for i in range(1, maxindexy)], [i for i in range(1, maxindexx)])))
     h2_point = (
-        set(list(product([i for i in range(14)], [i for i in range(18)])))  # all
+        set(list(product([i for i in range(maxindexy+1)], [i for i in range(maxindexx+1)])))  # all
         - h1_point
         - h4_point
     )  # 计算两次的点，非边界边上的点
     # h3_point = set(list(product([1, 2], [0, 4])))  # 计算三次的点，凹角点， 在四方的方格网上不会出现，具体情况具体分析
-    # print(h1_point, h2_point, h4_point)
     for y, x_line in enumerate(lists):
         for x, data in enumerate(x_line):
             if (y, x) in h1_point:
@@ -133,10 +95,6 @@ def c_she_ji_biao_gao(lists: list[list], h0: float):
     results = []
     global center_point
     center_point = center_point
-    # 0 1 2 3 4   - > x
-    # 0 1 2 3 4   |
-    # 0 1 2 3 4   |
-    # 0 1 2 3 4   y
     for y, x_line in enumerate(lists):
         line = []
         for x, __ in enumerate(x_line):
@@ -168,20 +126,16 @@ def c_x(lists: list[list]):
 
 # 设计标高的最高点
 print("设计标高的最高点")
-
-
 print(c_x(linea))
 
-# print("设计标高")
-# print(np.array(c_she_ji_biao_gao(linea, c_x(linea))))
+
 print("设计标高平整标高")
 设计标高平整标高 = c_h0(c_she_ji_biao_gao(linea, c_x(linea)))
 
 print(设计标高平整标高)
 
 # 原场地平整标高应该等于设计标高平整标高
-
-# assert 设计标高平整标高 == 原场地平整标高, "设计标高平整标高应该等于原场地平整标高"
+assert 设计标高平整标高 == 原场地平整标高, "设计标高平整标高应该等于原场地平整标高"
 
 设计标高 = np.array(c_she_ji_biao_gao(linea, c_x(linea)))
 原场地标高 = np.array(linea)
@@ -193,6 +147,8 @@ print("施工标高 = 设计标高减去原场地标高")
 施工标高 = np.array(设计标高) - np.array(原场地标高)
 print(施工标高)
 
-print(施工标高.shape)
+# print(施工标高.shape)
+
+assert 施工标高.shape == net_shape, "施工标高.shape != net_shape"
 
 # 最终得到施工标高 = 设计标高减去原场地标高
