@@ -1,6 +1,6 @@
 import numpy as np
 from rich import print
-from typing import Iterable, List, Union
+from typing import Iterable, List, Union, Optional
 import math
 from shapely.geometry import Point, Polygon, MultiPolygon
 from dataProcess import lenth_net
@@ -563,13 +563,13 @@ class GridNet:
         return paths
 
     # def calculateAmount of excavation and filling
-    def calculate_area(self, intersection):
+    def calculate_area(
+        self, intersection: Optional[Union[Polygon, MultiPolygon]] = None
+    ):
         """
         计算区域的填方或者挖方量，计算方法，多边形面积乘以多边形角点平均高程
         """
-
         if not intersection:
-
             return 0
         if isinstance(intersection, Polygon):
             polygons = [intersection]
@@ -578,9 +578,6 @@ class GridNet:
             polygons = intersection.geoms
         else:
             return 0
-
-        # print(polygons)
-
         total_area = 0
 
         for poly in polygons:
@@ -993,14 +990,23 @@ class GridNet:
 
             merged_vertices = []
             if isinstance(merged_polygon, Polygon):
+                # self.calculate_area()
+                # print("")
                 merged_vertices = list(merged_polygon.exterior.coords)
             elif isinstance(merged_polygon, MultiPolygon):
                 for poly in merged_polygon.geoms:
                     merged_vertices.append(list(poly.exterior.coords))
 
-            print(merged_vertices, np.array(merged_vertices).shape)
-
-            demension = len(np.array(merged_vertices).shape)
+            for vertexs in merged_vertices:
+                for vertex in vertexs:
+                    if isinstance(vertex, tuple) or isinstance(vertex, list):
+                        demension = 3
+                        break
+                    elif isinstance(vertex, float) or isinstance(vertex, int):
+                        demension = 2
+                        break
+                    else:
+                        raise ValueError("vertex type error !")
 
             if demension == 3:
 

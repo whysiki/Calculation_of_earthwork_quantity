@@ -207,9 +207,17 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
             geoCenterPoint.y + GridNet().edge_length / 6,
             f"({round(geoCenterPoint.x,2)} , {round(geoCenterPoint.y,2)})",
             color="red",
-            weight="bold",
             size=8,
         )
+
+        # ax12[0].text(
+        #     geoCenterPoint.x,
+        #     geoCenterPoint.y + GridNet().edge_length / 2,
+        #     f"-{round(v,2)}",
+        #     color="red",
+        #     weight="bold",
+        #     size=8,
+        # )
 
         xs, ys = zip(*[(p.x, p.y) for p in path])
 
@@ -230,16 +238,23 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
             geoCenterPoint.y + GridNet().edge_length / 6,
             f"({round(geoCenterPoint.x,2)} , {round(geoCenterPoint.y,2)})",
             color="blue",
-            weight="bold",
+            # weight="bold",
             size=8,
         )
+        # ax12[1].text(
+        #     geoCenterPoint.x,
+        #     geoCenterPoint.y + GridNet().edge_length / 2,
+        #     f"+{round(v,2)}",
+        #     color="blue",
+        #     weight="bold",
+        #     size=8,
+        # )
 
         xs, ys = zip(*[(p.x, p.y) for p in path])
 
         ax12[1].plot(xs, ys, color="blue")
 
         # 设置图表标题
-
         ax12[1].set_title("Positive Path")
 
     for i in range(2):
@@ -283,7 +298,7 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
         handles=legend_elements12, loc="center left", bbox_to_anchor=(1, 0.5)
     )
 
-    fig12.tight_layout()
+    # fig12.tight_layout()
 
     fig12.add_artist(legend12)
 
@@ -369,7 +384,42 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
     # table.set_fontsize(6)
     # table.scale(1, 2)
     ax.set_title("Grid Excavation and Filling Data Table")
-    fig.tight_layout()
+
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="excavation quantity",
+            markersize=10,
+            markerfacecolor="red",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="filling quantity",
+            markersize=10,
+            markerfacecolor="blue",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label="grid index",
+            markersize=10,
+            markerfacecolor="black",
+        ),
+    ]
+
+    legend = ax.legend(
+        handles=legend_elements, loc="center left", bbox_to_anchor=(1, 0.5)
+    )
+
+    # fig.tight_layout()
 
     if savePath and isinstance(savePath, str):
 
