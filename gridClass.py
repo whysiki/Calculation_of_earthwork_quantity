@@ -849,39 +849,13 @@ class GridNet:
 
     def caculate_for_each_grid_negtive_positive_zone(self):
 
-        # for rs in self.grids:
-
-        #     for grid in tqdm(rs):
-
-        #         print(grid)
-
         for rs in tqdm(self.grids, desc="caculate_for_each_grid_negtive_positive_zone"):
-
-            # print(rs)
 
             for grid in tqdm(rs):  # edge
 
                 split_zones: list[GridPath] = []
 
                 count_zeropoints_time = 0
-
-                # last_end_index = 0
-
-                # maxzeroindex = max(
-                #     [
-                #         grid.path.get_index_by_point(p)
-                #         for p in grid.path
-                #         if p.isZeroPoint()
-                #     ]
-                # )
-
-                # maxindex = maxzeroindex if maxzeroindex > 0 else len(grid.path)
-
-                # try:
-
-                # print(grid)
-                # GridPoint(coordinate=(0, 0), value=2.37)     GridPoint(coordinate=(20, 0), value=2.72)
-                # GridPoint(coordinate=(0, 20), value=2.79)     GridPoint(coordinate=(20, 20), value=2.79)
 
                 zerofind = [
                     grid.path.get_index_by_point(p)
@@ -892,9 +866,6 @@ class GridNet:
                 if len(zerofind) > 0:
 
                     minzeroindex = min(zerofind)
-                    # except:
-
-                    # minzeroindex = 0
 
                     minindex = minzeroindex if minzeroindex > 0 else 0
 
