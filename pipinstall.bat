@@ -5,4 +5,6 @@ pip install matplotlib
 pip install rich
 pip install shapely
 pip install adjustText
+pip install tqdm
+pip install openpyxl
 pip freeze > requirements.txt
