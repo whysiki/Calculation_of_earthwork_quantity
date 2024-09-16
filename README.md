@@ -49,6 +49,8 @@ center_point = (0, 0)  # y x 如果从左往右下降坡度，从上往下下降
 **数据会输出在同级目录的data文件夹下**
 
 #### 挖填示意图 ，data\ExcavationAndFillingZone.png
+- 红色为挖方区域
+- 蓝色为填方区域
 ![alt text](./images/README/挖填示意图.png)
 #### 边界路径/零点路径 ，data\NegativeAndPositivePath.png
 ![alt text](./images/README/边界路径.png)
