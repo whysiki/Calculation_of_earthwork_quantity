@@ -332,8 +332,12 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
     for rs in gridNet.grids:
         for grid in rs:
             textindex = f"{grid.index+1}"
-            textexcavation = f"-{abs(grid.excavationAmount)}"
-            textfilling = f"+{abs(grid.fillingAmount)}"
+            textexcavation = (
+                f"-{abs(grid.excavationAmount)}" if grid.excavationAmount < 0 else "0"
+            )
+            textfilling = (
+                f"+{abs(grid.fillingAmount)}" if grid.fillingAmount > 0 else "0"
+            )
             ax.text(
                 grid.center_coordinate[0],
                 grid.center_coordinate[1],
