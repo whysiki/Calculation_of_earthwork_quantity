@@ -3,7 +3,7 @@ from rich import print
 from itertools import product
 
 # data数据：每个元素为一个角点的原始标高数据
-# 坐标系
+# 坐标系, 左上角为原点坐标
 # ---->x 从左往右为 x
 # |
 # |
