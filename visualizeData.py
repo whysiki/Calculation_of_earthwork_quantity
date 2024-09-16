@@ -5,10 +5,11 @@ from gridClass import GridNet
 from adjustText import adjust_text
 from rich import print
 import pandas as pd
+from pathlib import Path
 
 # 图表大小
 
-chart_size = (20, 12)
+chart_size = (20 - 4, 12 - 4)
 
 
 # 全局设置字体大小
@@ -298,7 +299,7 @@ def showNegativeAndPositivePath(gridNet: GridNet, savePath: str = None, dpi: int
         handles=legend_elements12, loc="center left", bbox_to_anchor=(1, 0.5)
     )
 
-    # fig12.tight_layout()
+    fig12.tight_layout()
 
     fig12.add_artist(legend12)
 
@@ -370,7 +371,9 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
 
     # 导出为表格
 
-    pd.DataFrame(cell_text).to_excel("DataTable.xlsx", index=False)
+    pd.DataFrame(cell_text).to_excel(
+        Path(savePath).parent / "DataTable.xlsx", index=False
+    )
 
     # ax2 = fig.add_subplot(gs[1])
     # ax2.axis("off")
@@ -419,7 +422,7 @@ def showData(gridNet: GridNet, savePath: str = None, dpi: int = 300):
         handles=legend_elements, loc="center left", bbox_to_anchor=(1, 0.5)
     )
 
-    # fig.tight_layout()
+    fig.tight_layout()
 
     if savePath and isinstance(savePath, str):
 

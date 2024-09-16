@@ -7,6 +7,7 @@ from visualizeData import (
     showExcavationAndFillingZone,
 )
 from rich import print
+import os
 
 if __name__ == "__main__":
 
@@ -41,14 +42,17 @@ if __name__ == "__main__":
 
     gridNet.calculateAmountExcavationAndFilling_for_all_girds()
 
+    if not os.path.exists("data"):
+        os.mkdir("data")
+
     showExcavationAndFillingZone(
-        gridNet, savePath="ExcavationAndFillingZone.png", dpi=150
+        gridNet, savePath="data/ExcavationAndFillingZone.png", dpi=150
     )
 
     showNegativeAndPositivePath(
-        gridNet, savePath="NegativeAndPositivePath.png", dpi=150
+        gridNet, savePath="data/NegativeAndPositivePath.png", dpi=150
     )
 
-    showData(gridNet, savePath="DataTable.png", dpi=150)
+    showData(gridNet, savePath="data/DataTable.png", dpi=150)
 
     plt.show()
